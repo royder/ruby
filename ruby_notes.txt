@@ -1,0 +1,285 @@
+Ruby Notes:
+============== general notes ===================
+* = splat operator
+array = [*1..10] creates and array with [1,2,,3,4,5,6,7,8,9,10]
+
+ternary operator: value > 5 ? 'Over 5' : 'Not over 5'
+
+============== ITERATORS ===================
+integers/floats: times, upto, downto, step (every n is step)
+range: each, step
+string: each, each_line, each_byte
+array: each, each_index, each_with_index
+hash: each, each_key, each_value, each_pair
+------------
+.times do end #will loop that number of times
+1.upto(5) do |i| end #i will be value
+fruits.each do | fruit| end || for fruit in fruits; the first if the code block way of doing it
+------------
+break #terminate the loop
+next #move to next iteration
+redo #redo current iteration
+retry #start loop over
+------------
+collect: 
+will return the entire collection regardless of array or hash, you should use clone to copy one array to another
+you normally use collect when you want to do something with each element in an array and form a new collection
+
+============== CODE BLOCKS ===================
+Anything between do and end or {}
+
+find block (boolean expression code block):
+  find/detect -- returns object or nil; find a match, once
+  find_all/select -- returns array; find all matches
+  any? -- returns boolean; do any match
+  all? -- returns boolean; do all match
+  delete_if -- returns array without matches
+
+merge block (used to merge hashes together)
+h1 = {'a'=>111,'b'=222}
+h1 = {'b'=>333,'c'=444}
+  h1.merge(h2) => a=111, b=333, c=444 (conflict, h2 wins)
+  h2.merge(h1) => a=111, b=222, c=444 (conflict, h1 wins)
+
+The merge block will allow you to specify how conflicts are resolved
+h1.merge(h2) {|key,old,new| new} default
+h1.merge(h2) {|key,old,new| old} keeps the old value
+Or, you can make a more complicated block
+h1.merge(h2) do |key,old,new|
+  if old < new
+    old
+  else
+    new
+  end
+end
+
+collect/map block (arrays, hashes, ranges)
+array.collect {|i| i+1} iterates through each item in the array and executes code block and returns a new array
+if you have an if, you probably need to have an else. if you don't and the if evaluates to false then you will get the occurrence 
+set to nil in the new array
+
+sort code block (arrays, hashes)
+<=> comparison operator (-1 if less, 0 if equal, 1 if more than)
+1 <=> 2 == -1
+array.sort {|v1,v2| v1 <=> v2} is the same as array.sort
+array.sort {|v1,v2| v2 <=> v1} is the same as array.sort.reverse
+array.sort_by 
+hash.sort {|item1, item2| item1[0] <=> item2[0]} == sort by keys
+hash.sort {|item1, item2| item1[1] <=> item2[1]} == sort by values
+
+inject code block (accumulator)
+(1..10).inject{|memo,n| memo +n}
+.inject(2) initializes memo to 2
+
+============== METHODS ===================
+* have to define methods before you call them
+* naming should be all lowercase with underscores
+def some_name(var1,var2=default)
+  return value (or last thing the method does, return exits method)
+end
+
+return "Exactly 5" if value.to_i == 5 #you can construct conditionals in return
+
+arguments(name) just like any other language
+argument default values method(arg=value)
+
+============== Syntactic Sugar ===================
+8+2 is actually 8.+(2) or 8.+2; plus is a method but because of syntactic sugar, we don't have to put the .
+array<<4 == array.<<(4)
+array[2] == array.[](2)
+array[2] = 'x' == array.[]=(2,'x')
+
+You can name methods using syntactic sugar
+
+============== Classes ===================
+you use CamelCase and must begin with a capital letter
+class SomeName  
+  def some_method
+    return something
+  end
+end
+
+var = SomeName.new
+var.some_method
+
+@instance_variable --  access using reader/writer methods (getter/setter)
+def set_var(var)
+  @var = var
+end
+
+def get_var
+  @var
+end
+
+or, the syntactic sugar way
+def noise=(noise)
+  @noise = noise
+end
+
+def var
+  var
+end
+
+animal1.noise = "Moo!"
+animal1.noise
+
+or, you can use attribute methods -- attr_* methods
+attr_reader
+attr_writer
+attr_accessor (reader and writer)
+
+attr_reader :name
+is the same as
+def name
+  @name
+end
+
+attr_writer :name
+is the same as
+def name=(name)
+  @name = name
+end
+
+attr_accessor :name creates both
+
+for multiple:
+attr_accessor :name, :var2, :var3
+
+Initialize Method is the "constructor"
+def initialize(arg1, arg2=default)
+end
+
+Class Methods (what is true for the class, not instance)
+new is a class method 
+
+def self.method_name
+end
+
+Class Attributes
+@@var
+
+Class Inheritance
+same as other languages cept you can only have single inheritance
+
+Class Override
+
+============== MODULES ===================
+A way to package code, use CamelCase with first letter capitalized
+
+namespacing:
+module ModuleName
+  class Date
+  end
+end
+
+var = ModuleName::Date.new
+
+mixins:
+Ruby only allows classes to inherit from one superclass, if additional functionality is needed it can be 
+placed in a module and mixed in
+
+You create a module and then use the the include ModuleName in the class.
+
+load, require, include
+break modules into separate files and serve as code libraries
+load = load any dependency modules first, loads source file every time this is called
+require = works the same as load but keeps track of the fact that the source file has already been loaded and does not load again
+include = used exclusively for bringing modules in as mixins
+
+Enumerable as a Mix-In
+sort, detect, select, reject, collect, inject
+used on arrays, hashes, ranges, strings
+
+If you look at the Array ruby doc, you will see enumerable as an included module
+same with hash, range, string
+
+Enumerable is just something that can be counted, and all of these sets use this module as a mixin
+
+============== FILES ===================
+A part of the IO class
+
+ -- Cross platform issues -- 
+
+File paths:
+File path separators Unix / or Windows \
+You can use / and even on the Windows machine it should work just fie.
+The best way is to use the File Class.  You can just the join method.
+File.join('shared','lib','myfile.rb')
+
+File permissions:
+Most files are owned by you and accessible by you.
+chmod - change permissions
+chown - change owner
+
+__FILE__ is the file that we are currently working with
+File.expand_path(__FILE__)
+File.dirname(__FILE__) <- says dir the file is in
+input_file = File.join(File.dirname(__FILE__), '..', "exercise_files") <- relative
+
+ -- Accessing Files --
+
+File.new:
+Creates a new file object.
+file = File.new('filename', 'w') <- w is the mode, write mode
+file.close will close the file again for writing
+
+File.open (preferred to do this over new because you do not need to instantiate)
+File.open('name', 'r') do |file|
+  # read data from file
+end
+
+File Access Modes:
+r = read from start
+w = truncate/write from the start
+a = append/write from the end
+
+r+ lets you read and write but is not destructive
+w+ lets you read and write but is destructive 
+a+ lets you read and puts you at the end of the document for wriiting
+
+Most of the time is r,w,a and r+
+
+ -- Writing to files -- 
+Write doesn't happen until you file.close
+file.puts
+file.print
+file.write (returns the number of characters written) 
+file << 'test' will append to the file (returns the file object)
+
+ -- Reading from files --
+file = File.new('filename', 'r')
+file.gets will get a line
+file.gets.chomp to return the line without the line return BUT chomp can't handle nil
+file.read(n) will read n characters
+while line = file.gets will get a new line while it exists
+
+ -- Examining File Details --
+file = 'filename'
+File.exist?(file) is it there
+File.file?(file) is it a file, not a dir
+File.directory?(file)
+File.readable?(file)
+File.writeable?(file)
+File.size(file) # in bytes
+File.dirname(file) dir name of the file
+File.expand_path(file) full path
+File.basename(file) is the file name
+File.extname(file) is the extension useful for images
+File.atime(file) Last time read from or written to
+File.mtime(file) Last time it was modified
+File.ctime(file) Last status change time NOT CREATED TIME, not possible (read or written, permission owner/group)
+
+These are not instance methods but you can use stat when you have a file object. 
+myfile = File.new(file, 'r')
+myFile.stat.size
+myFile.stat.readable
+
+ -- File Pointers --
+Used to keep track of where you are in the file. This can be manipulated.
+file.pos # gives the position of the file pointer
+file.read(3) # would increase the pointer by 3
+file.gets # will get the line from pointer position, not necessarily from the beginning of line
+file.pos = 13 # move the pointer to position 13
+file.eof? # true if at eof
+file.rewind # returns to beginning of the file
+file.pos += 6 # move it forward 6
